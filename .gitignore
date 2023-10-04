@@ -7,13 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+frontend/node_modules
 Backend/lib
 Backend/lib.php
 dist
 dist-ssr
 *.local
-
+frontend/package-lock.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
