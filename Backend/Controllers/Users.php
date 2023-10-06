@@ -23,6 +23,7 @@ if (isset($_POST) && !empty($_POST)) {
             if (empty($email) || empty($password)) {
                 $response["message"] = "Email and password are required.";
                 $response["status"] = "400";
+                http_response_code(400);
                 echo json_encode($response);
             } else {
                 date_default_timezone_set("Asia/Kolkata");
@@ -44,7 +45,8 @@ if (isset($_POST) && !empty($_POST)) {
                     // Check if the user has reached 3 or more failed attempts within the last hour
                     if ($loginAttempts >= 3 && ($currentTimestamp - $lastAttemptTime) < $hourInSeconds) {
                         $response["message"] = "Too many login attempts. Please try again in one hour.";
-                        $response["status"] = "429"; // HTTP 429 indicates too many requests
+                        $response["status"] = "429";
+                        http_response_code(429);
                         echo json_encode($response);
                     } else {
                         $q = $d->select(
@@ -71,6 +73,7 @@ if (isset($_POST) && !empty($_POST)) {
                 
                             $response["message"] = "Login success.";
                             $response["status"] = "200";
+                            http_response_code(200);
                             echo json_encode($response);
                            } else {
 
@@ -82,6 +85,7 @@ if (isset($_POST) && !empty($_POST)) {
             
                             $response["message"] = "Wrong Credentials.";
                             $response["status"] = "201";
+                            http_response_code(201);
                             echo json_encode($response);
                         }
                     }
@@ -89,6 +93,7 @@ if (isset($_POST) && !empty($_POST)) {
                     // User not found
                     $response["message"] = "User not found.";
                     $response["status"] = "404";
+                    http_response_code(404);
                     echo json_encode($response);
                 }
             }
@@ -97,6 +102,7 @@ if (isset($_POST) && !empty($_POST)) {
             if (empty($name)  || empty($email) || empty($password)) {
                 $response["message"] = "All fields are required for registration.";
                 $response["status"] = 400;
+                http_response_code(400);
                 echo json_encode($response);
             } else {
                 $m->set_data('name', $name);
@@ -116,6 +122,7 @@ if (isset($_POST) && !empty($_POST)) {
                 if ($existingemail && $existingemail->num_rows > 0) {
                     $response["message"] = "Email with the same Email already exists.";
                     $response["status"] = 409;
+                    http_response_code(409);
                     echo json_encode($response);
                 } else {
                     $q = $d->insert("users", $a);
@@ -125,10 +132,12 @@ if (isset($_POST) && !empty($_POST)) {
                         $response['sub_id'] = $sub_id;
                         $response['message'] = 'Register successfully';
                         $response['status'] = 200;
+                        http_response_code(200);
                         echo json_encode($response);
                     } else {
                         $response["message"] = "Registration failed.";
                         $response["status"] = 500;
+                        http_response_code(500);
                         echo json_encode($response);
                     }
                 }
@@ -137,12 +146,14 @@ if (isset($_POST) && !empty($_POST)) {
          else {
             $response["message"] = "Invalid tag.";
             $response["status"] = 400;
+            http_response_code(400);
             echo json_encode($response);
         }
     }
 } else {
     $response["message"] = "No data received.";
     $response["status"] = 400;
+    http_response_code(400);
     echo json_encode($response);
 }
 ?>

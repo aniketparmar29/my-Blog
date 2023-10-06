@@ -17,7 +17,6 @@ export const usersignup = (data)=>async(dispatch)=>{
         let res = await registerUserApi(data)
         dispatch({type:REGISTER_SUCCESS,payload:res.data})
     }catch(err){
-        console.log(err)
         dispatch({type:REGISTER_FAIL})
     }
 }
