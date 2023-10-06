@@ -1,8 +1,5 @@
 <?php
-
-error_reporting(E_ALL);
-error_reporting(E_ERROR | E_PARSE );  
- error_reporting(0);  
+ 
 
  include_once '../lib.php';
 
@@ -18,8 +15,7 @@ if (isset($_POST) && !empty($_POST)) {
         echo json_encode($response);
     } else {
         $tag = trim($tag);
-        $first_name = trim($first_name);
-        $last_name = trim($last_name);
+        $name = trim($name);
         $email = trim($email);
         $password = trim($password);
 
@@ -29,19 +25,16 @@ if (isset($_POST) && !empty($_POST)) {
                 $response["status"] = "400";
                 echo json_encode($response);
             } else {
-                // Set the time zone in PHP
                 date_default_timezone_set("Asia/Kolkata");
                 
                 // Set the time zone in MySQL
-                mysqli_query($con, "SET time_zone = 'Asia/Kolkata'");
-                
                 // Get the current login attempts and last attempt time from the users table
-                $getUserQuery = "SELECT id, login_attempts, last_attempt_time FROM users WHERE email='$email'";
+                $getUserQuery = "SELECT user_id, login_attempts, last_attempt_time FROM users WHERE email='$email'";
                 $getUserResult = mysqli_query($con, $getUserQuery);
                 
                 if ($getUserResult && mysqli_num_rows($getUserResult) > 0) {
                     $userData = mysqli_fetch_assoc($getUserResult);
-                    $userId = $userData['id'];
+                    $userId = $userData['user_id'];
                     $loginAttempts = $userData['login_attempts'];
                     $lastAttemptTime = strtotime($userData['last_attempt_time']);
                     $currentTimestamp = time();
@@ -55,21 +48,18 @@ if (isset($_POST) && !empty($_POST)) {
                         echo json_encode($response);
                     } else {
                         $q = $d->select(
-                            "users u 
-                            LEFT JOIN addresses a ON u.id = a.user_id", 
-                            "u.email='$email' AND u.password='$password'", 
+                            "users", 
+                            "email='$email' AND password='$password'", 
                             ""
                         );
-                
                         if (mysqli_num_rows($q) > 0) {
-                            mysqli_query($con, "UPDATE users SET login_attempts=0, last_attempt_time=NULL WHERE id=$userId");
+                            mysqli_query($con, "UPDATE users SET login_attempts=0, last_attempt_time=NULL WHERE user_id=$userId");
                 
                             $response["userDetails"] = array();
                 
                             while ($data_app = mysqli_fetch_array($q)) {
                                 $userDetails = array();
-                                $userDetails["first_name"] = $data_app["first_name"];
-                                $userDetails["last_name"] = $data_app["last_name"];
+                                $userDetails["name"] = $data_app["name"];
                                 $userDetails["email"] = $data_app["email"];
                                 $userDetails["created_at"] = $data_app["created_at"];
                 
@@ -83,7 +73,12 @@ if (isset($_POST) && !empty($_POST)) {
                             $response["status"] = "200";
                             echo json_encode($response);
                            } else {
-                            mysqli_query($con, "UPDATE users SET login_attempts=login_attempts+1, last_attempt_time=NOW() WHERE id=$userId");
+
+                            $date_op = date('Y-m-d H:i:s'); // Get the current timestamp
+                            
+                            // Update the user's login_attempts and last_attempt_time in the users table
+                            $updateQuery = "UPDATE users SET login_attempts =login_attempts + 1 , last_attempt_time = '$date_op' WHERE user_id = $userId";
+                            $q = mysqli_query($con, $updateQuery);
             
                             $response["message"] = "Wrong Credentials.";
                             $response["status"] = "201";
@@ -99,27 +94,28 @@ if (isset($_POST) && !empty($_POST)) {
             }
         }
         elseif ($tag == "Register") {
-            if (empty($name) || empty($user_type) || empty($email) || empty($password)) {
+            if (empty($name)  || empty($email) || empty($password)) {
                 $response["message"] = "All fields are required for registration.";
-                $response["status"] = "400";
+                $response["status"] = 400;
                 echo json_encode($response);
             } else {
-                $m->set_data('first_name', $first_name);
-                $m->set_data('user_type', $user_type);
+                $m->set_data('name', $name);
+                $m->set_data('user_type', 'user');
                 $m->set_data('email', $email);
                 $m->set_data('password', $password);
                 $a = array(
-                    'first_name' => $m->get_data('first_name'),
+                    'name' => $m->get_data('name'),
                     'user_type' => $m->get_data('user_type'),
                     'email' => $m->get_data('email'),
-                    'password' => $m->get_data('password')
+                    'password' => $m->get_data('password'),
+                    'created_at' => date('Y-m-d H:i:s')
                 );
 
                 $existingemail = $d->select("users", "email='" . $m->get_data('email') . "'");
 
                 if ($existingemail && $existingemail->num_rows > 0) {
                     $response["message"] = "Email with the same Email already exists.";
-                    $response["status"] = "201";
+                    $response["status"] = 409;
                     echo json_encode($response);
                 } else {
                     $q = $d->insert("users", $a);
@@ -132,7 +128,7 @@ if (isset($_POST) && !empty($_POST)) {
                         echo json_encode($response);
                     } else {
                         $response["message"] = "Registration failed.";
-                        $response["status"] = "201";
+                        $response["status"] = 500;
                         echo json_encode($response);
                     }
                 }
@@ -140,13 +136,13 @@ if (isset($_POST) && !empty($_POST)) {
         }
          else {
             $response["message"] = "Invalid tag.";
-            $response["status"] = "400";
+            $response["status"] = 400;
             echo json_encode($response);
         }
     }
 } else {
     $response["message"] = "No data received.";
-    $response["status"] = "400";
+    $response["status"] = 400;
     echo json_encode($response);
 }
 ?>
