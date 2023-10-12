@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const registerUserApi = async (data) => {
     try {
-        const res = await axios.post(`http://localhost/js_Learning/my-blog/Backend/Controllers/Users.php`, data,{
+        const res = await axios.post(`http://localhost/my-blog/Backend/Controllers/Users.php`, data,{
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
@@ -16,7 +16,7 @@ export const registerUserApi = async (data) => {
 
 export const loginUserApi = async (data) => {
     try {
-        const res = await axios.post(`http://localhost/js_Learning/my-blog/Backend/Controllers/Users.php`, data,{
+        const res = await axios.post(`http://localhost/my-blog/Backend/Controllers/Users.php`, data,{
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
